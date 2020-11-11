@@ -10,6 +10,8 @@ let playerFighter;
 let floorLevel = 125;
 let levelWidth = 800;
 
+let playerCharacterName = "Stick";
+
 let debugModeEnabled = true;
 
 //ref
@@ -26,7 +28,7 @@ function setup() {
   createCanvas(800, 500, WEBGL);
   // noStroke();
   AIEnemy = new AIFighter(300,floorLevel);
-  playerFighter = new PlayerFighter(-300,floorLevel);
+  playerFighter = new PlayerFighter(-300,floorLevel,"Stick");
 
    gradient = createGraphics(400, 400, WEBGL);
    gradient.noStroke();
@@ -93,17 +95,25 @@ class PlayerFighter{
   yVelocity = 0;
   dampening = 0.3;
   xAirVelocity = 0;
-  airControl = 5;
+  airSpeed = 5;
+  jumpPower = 10;
+  
 
-  constructor(px,py){
+  constructor(px,py,characterName){
+    var obj = JSON.parse('{ "name":"John", "age":30, "city":"New York"}');
+    console.log(obj.name);
+    //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+
+
     this.posx = px;
     this.posy = py;
     this.sprite = createSprite();
-    this.idleImage = loadImage('Assets/Stick/idle.gif');
-    this.standingAttackImage = loadImage('Assets/Stick/standing-attack.png');
-    this.walkImage = loadImage('Assets/Stick/walk.gif');
-    this.walkBackwardsImage = loadImage('Assets/Stick/walk-reverse.gif');
-    this.jumpImage = loadImage('Assets/Stick/jump.png');
+    this.crouchImage = loadImage('Assets/Characters/Stick/crouch.png');
+    this.idleImage = loadImage('Assets/Characters/Stick/idle.gif');
+    this.standingAttackImage = loadImage('Assets/Characters/Stick/standing-attack.png');
+    this.walkImage = loadImage('Assets/Characters/Stick/walk.gif');
+    this.walkBackwardsImage = loadImage('Assets/Characters/Stick/walk-reverse.gif');
+    this.jumpImage = loadImage('Assets/Characters/Stick/jump.png');
     //this.walkImage2 = loadImage('Assets/Placeholder/default-player-walk2.png');
     this.sprite.addImage(this.idleImage);
     
@@ -126,16 +136,10 @@ class PlayerFighter{
       this.posy = floorLevel;
       this.yVelocity = 0;
     }
-    
-    /*if(this.posy < 100){
-      console.log(this.posy);
-      this.yVelocity *= -1;
-    }*/
-    //this.yVelocity -= this.yVelocity*this.dampening;
     //console.log(this.posy);
     if(this.frameIndex > 0){
       this.frameIndex+= 1;
-      if(this.frameIndex > 30){
+      if(this.frameIndex > 30 && !(keyIsDown(DOWN_ARROW))){
         this.frameIndex = 0;
         this.sprite.addImage(this.idleImage);
       }
@@ -146,7 +150,7 @@ class PlayerFighter{
         this.left();
       } else if (keyIsDown(RIGHT_ARROW)){
         this.right();
-      } else if(this.frameIndex == 0){
+      } else if(this.frameIndex == 0 && !(keyIsDown(DOWN_ARROW))){
         this.idle();
       }
     } else {
@@ -161,6 +165,10 @@ class PlayerFighter{
 
     //JUMP: TILT JUMP SPRITE BY DIRECTION BACK/FORWARD
     //CROUCH?
+    //ALSO: change paths and files into characters/ directory
+    if(keyIsDown(DOWN_ARROW)){
+      this.sprite.addImage(this.crouchImage);
+    }
   }
 
   attack(){
@@ -169,6 +177,7 @@ class PlayerFighter{
   }
   idle(){
     this.sprite.addImage(this.idleImage);
+    
   }
   left(){
     if(this.posx > -levelWidth/2){
@@ -186,11 +195,11 @@ class PlayerFighter{
   jump(){
     if(this.posy <= floorLevel){
       if(keyIsDown(LEFT_ARROW)){
-        this.xAirVelocity = -this.airControl;
+        this.xAirVelocity = -this.airSpeed;
       } else if(keyIsDown(RIGHT_ARROW)){
-        this.xAirVelocity = this.airControl;
+        this.xAirVelocity = this.airSpeed;
       }
-      this.yVelocity = 10;
+      this.yVelocity = this.jumpPower;
       this.sprite.addImage(this.jumpImage);
       this.posy -= this.yVelocity;
     }
