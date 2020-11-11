@@ -109,7 +109,13 @@ class PlayerFighter{
     
   }
   display(){
-    
+    if(this.posx < -levelWidth/2){
+      this.posx = -levelWidth/2;
+    } else if(this.posx > levelWidth/2){
+      this.posx = levelWidth/2;
+    } else if (this.posx > AIEnemy.posx - AIEnemy.image.width){
+      this.posx = AIEnemy.posx - AIEnemy.image.width;
+    }
     //if not on ground: 
 
     if(this.posy < floorLevel){
