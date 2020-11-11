@@ -193,7 +193,7 @@ class PlayerFighter{
     this.sprite.addImage(this.walkImage);
   }
   jump(){
-    if(this.posy <= floorLevel){
+    if(this.posy >= floorLevel){
       if(keyIsDown(LEFT_ARROW)){
         this.xAirVelocity = -this.airSpeed;
       } else if(keyIsDown(RIGHT_ARROW)){
