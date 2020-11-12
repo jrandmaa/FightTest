@@ -10,6 +10,8 @@ let playerFighter;
 let floorLevel = 125;
 let levelWidth = 800;
 
+let hitInvincibilityPeriod = 100;
+
 let playerCharacterName = "Stick";
 
 let debugModeEnabled = true;
@@ -72,25 +74,46 @@ function draw() {
 }
 
 class AIFighter{
+  invincibilityPeriod = false;
+  invincibilityTimer = hitInvincibilityPeriod;
   constructor(px,py){
     this.posx = px;
     this.posy = py;
     this.sprite = createSprite();
     this.image = loadImage('Assets/Placeholder/default-character.png');
     this.sprite.addImage(this.image);
+    
   }
   display(){
-    
+    if(this.invincibilityPeriod){
+      if(this.invincibilityTimer % 5 == 0){
+        this.sprite.visible = !this.sprite.visible;
+      }
+      
+      this.invincibilityTimer -=1;
+      if(this.invincibilityTimer <= 0){
+        this.invincibilityTimer = hitInvincibilityPeriod;
+        this.invincibilityPeriod = false;
+        this.sprite.visible = true;
+      }
+    }
     this.sprite.position.x = this.posx + camTargetX;
     this.sprite.position.y = this.posy;
-    
+    //this.sprite.mirrorX();
     this.sprite.display();
+  }
+  hurt(dmg){
+    if(!this.invincibilityPeriod){
+      //this.posy += 1;
+      this.invincibilityPeriod = true;
+    }
+    
   }
 }
 
 class PlayerFighter{
   frameIndex = 0;
-  frameLimit = 30;
+  frameLimit = 15;
 
   yVelocity = 0;
   dampening = 0.3;
@@ -98,10 +121,14 @@ class PlayerFighter{
   airSpeed = 5;
   jumpPower = 10;
   
+  hitboxPositions = [70,-10,55,55];//OUTDATED
+  hitboxPosition = [70,-10];
 
   constructor(px,py,characterName){
     var obj = JSON.parse('{ "name":"John", "age":30, "city":"New York"}');
     console.log(obj.name);
+    let requestURL = 'Assets/Characters/Stick/Stick.json';
+    
     //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
 
 
@@ -119,6 +146,8 @@ class PlayerFighter{
     
   }
   display(){
+    
+    
     if(this.posx < -levelWidth/2){
       this.posx = -levelWidth/2;
     } else if(this.posx > levelWidth/2){
@@ -138,6 +167,12 @@ class PlayerFighter{
     }
     //console.log(this.posy);
     if(this.frameIndex > 0){
+      if(debugModeEnabled){
+        ellipse(this.posx + camTargetX+this.hitboxPosition[0], this.posy+this.hitboxPosition[1], 10,10);
+      }
+      if(this.posx + this.hitboxPosition[0] > AIEnemy.posx - AIEnemy.image.width){
+        AIEnemy.hurt(1);
+      }
       this.frameIndex+= 1;
       if(this.frameIndex > 30 && !(keyIsDown(DOWN_ARROW))){
         this.frameIndex = 0;
@@ -147,10 +182,13 @@ class PlayerFighter{
     if(this.posy >= floorLevel){
       this.xAirVelocity = 0;
       if (keyIsDown(LEFT_ARROW)){
+        this.frameIndex = 0;
         this.left();
       } else if (keyIsDown(RIGHT_ARROW)){
+        this.frameIndex = 0;
         this.right();
       } else if(this.frameIndex == 0 && !(keyIsDown(DOWN_ARROW))){
+        this.frameIndex = 0;
         this.idle();
       }
     } else {
@@ -173,6 +211,8 @@ class PlayerFighter{
 
   attack(){
     this.frameIndex = 1;
+    
+
     this.sprite.addImage(this.standingAttackImage);
   }
   idle(){
@@ -209,7 +249,7 @@ class PlayerFighter{
 }
 
 function keyPressed(){
-  if(keyCode == 88){
+  if(keyCode == 88 && !keyIsDown(RIGHT_ARROW) && !keyIsDown(LEFT_ARROW)){
     playerFighter.attack();
   }
   else if(keyCode == 90){
